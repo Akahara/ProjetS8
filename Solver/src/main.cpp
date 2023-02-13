@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <openxlsx/OpenXLSX.hpp>
+#include "../vendor/OpenXLSX/OpenXLSX.hpp"
 
 #include "geomap.h"
 #include "geometry.h"
