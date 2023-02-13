@@ -2,5 +2,6 @@
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.xls*
 x64/
 .vs/

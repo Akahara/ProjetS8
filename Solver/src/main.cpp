@@ -1,9 +1,11 @@
 #include <iostream>
 
+#include <openxlsx/OpenXLSX.hpp>
+
 #include "geomap.h"
 #include "geometry.h"
 
-int main()
+void testDummy()
 {
     // TODO move all this in test classes, or scrap completely
 
@@ -20,6 +22,31 @@ int main()
     Location london = Location::fromNECoordinates(51.5072, -0.1276);
     Location paris = Location::fromNECoordinates(48.8566, 2.3522);
     std::cout << "distance from london to paris=" << geometry::distance(london, paris) << "nmi" << std::endl;
+
+    std::cin.get();
+}
+
+int main()
+{
+    using namespace OpenXLSX;
+
+    XLDocument doc;
+    doc.create("Spreadsheet.xlsx");
+    auto wks = doc.workbook().worksheet("Sheet1");
+
+    wks.cell("A1").value() = "Hello, OpenXLSX!";
+
+    doc.save();
+    doc.close();
+
+    XLDocument d2;
+    d2.open("Spreadsheet.xlsx");
+    for (const auto &name : d2.workbook().worksheetNames())
+        std::cout << name << std::endl;
+    std::string name = d2.workbook().worksheetNames()[0];
+    std::cout << "opening " << name << std::endl;
+    auto wk2 = d2.workbook().worksheet(name);
+    std::cout << wk2.cell("A1").value() << std::endl;
 
     std::cin.get();
     return 0;
