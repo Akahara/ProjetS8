@@ -22,7 +22,7 @@
 #endif
 
 #ifndef OPENXLSX_DEPRECATED
-#  define OPENXLSX_DEPRECATED __declspec(deprecated)
+#  define OPENXLSX_DEPRECATED __attribute__ ((__deprecated__))
 #endif
 
 #ifndef OPENXLSX_DEPRECATED_EXPORT

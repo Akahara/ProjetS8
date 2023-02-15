@@ -137,7 +137,7 @@ namespace OpenXLSX
         XLSheetState visibility() const
         {
             XLQuery query(XLQueryType::QuerySheetVisibility);
-            query.setParam("sheetID", relationshipID());
+            query.template setParam("sheetID", relationshipID());
             auto state  = parentDoc().execQuery(query).template result<std::string>();
             auto result = XLSheetState::Visible;
 
@@ -187,7 +187,7 @@ namespace OpenXLSX
          */
         XLColor color() const
         {
-            return static_cast<const T&>(*this).getColor_impl();
+            return XLColor();
         }
 
         /**
@@ -208,7 +208,7 @@ namespace OpenXLSX
 //            return uint16_t(std::stoi(parentDoc().execQuery(R"({ "query": "QuerySheetIndex", "sheetID": ")" + relationshipID() + "\"}")));
 
             XLQuery query(XLQueryType::QuerySheetIndex);
-            query.setParam("sheetID", relationshipID());
+            query.template setParam("sheetID", relationshipID());
             return uint16_t(std::stoi(parentDoc().execQuery(query).template result<std::string>()));
         }
 
@@ -448,13 +448,6 @@ namespace OpenXLSX
         void updateSheetName(const std::string& oldName, const std::string& newName);
 
     private:
-
-        /**
-         * @brief
-         * @return
-         */
-        XLColor getColor_impl() const;
-
         /**
          * @brief
          * @param color
@@ -541,13 +534,6 @@ namespace OpenXLSX
         XLChartsheet& operator=(XLChartsheet&& other) noexcept = default;
 
     private:
-
-        /**
-         * @brief
-         * @return
-         */
-        XLColor getColor_impl() const;
-
         /**
          * @brief
          * @param color
