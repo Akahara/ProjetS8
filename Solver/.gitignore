@@ -5,3 +5,4 @@
 *.xls*
 x64/
 .vs/
+.DS_Store
