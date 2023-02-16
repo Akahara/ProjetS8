@@ -8,10 +8,10 @@
 #else
 #  ifndef OPENXLSX_EXPORT
 #    ifdef OpenXLSX_EXPORTS
-        /* We are building this library */
+/* We are building this library */
 #      define OPENXLSX_EXPORT 
 #    else
-        /* We are using this library */
+/* We are using this library */
 #      define OPENXLSX_EXPORT 
 #    endif
 #  endif
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef OPENXLSX_DEPRECATED
-#  define OPENXLSX_DEPRECATED __attribute__ ((__deprecated__))
+#  define OPENXLSX_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef OPENXLSX_DEPRECATED_EXPORT
