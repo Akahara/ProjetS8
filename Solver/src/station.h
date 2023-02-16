@@ -15,4 +15,5 @@ public:
     const Location &getLocation() const { return m_location; }
 
     bool operator==(const Station &other) const { return m_location == other.m_location; }
+    bool operator!=(const Station &other) const { return m_location != other.m_location; }
 };
