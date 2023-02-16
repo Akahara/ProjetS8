@@ -46,7 +46,7 @@ int main()
     std::string name = d2.workbook().worksheetNames()[0];
     std::cout << "opening " << name << std::endl;
     auto wk2 = d2.workbook().worksheet(name);
-    std::cout << wk2.cell("A1").value() << std::endl;
+    std::cout << wk2.cell("A1").value().get<std::string>() << std::endl;
 
     std::cin.get();
     return 0;

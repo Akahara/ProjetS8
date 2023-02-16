@@ -66,15 +66,13 @@ XLZipArchive::~XLZipArchive() = default;
  */
 XLZipArchive::operator bool() const
 {
-    return isValid();
+    return m_archive != nullptr;
 }
-
-bool XLZipArchive::isValid() const { return m_archive != nullptr; }
 
 /**
  * @details
  */
-bool OpenXLSX::XLZipArchive::isOpen() const
+bool OpenXLSX::XLZipArchive::isOpen()
 {
     return m_archive && m_archive->IsOpen();
 }

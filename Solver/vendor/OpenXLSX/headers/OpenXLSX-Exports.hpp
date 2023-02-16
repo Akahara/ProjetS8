@@ -8,10 +8,10 @@
 #else
 #  ifndef OPENXLSX_EXPORT
 #    ifdef OpenXLSX_EXPORTS
-        /* We are building this library */
+/* We are building this library */
 #      define OPENXLSX_EXPORT 
 #    else
-        /* We are using this library */
+/* We are using this library */
 #      define OPENXLSX_EXPORT 
 #    endif
 #  endif
