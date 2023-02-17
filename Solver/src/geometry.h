@@ -24,7 +24,7 @@ inline nauticmiles_t distance(const Location &p1, const Location &p2)
     return acos(sin(la1) * sin(la2) + cos(la1) * cos(la2) * cos(lo2 - lo1)) * geography::EARTH_RADIUS_NM;
 }
 
-inline bool isHamiltonian(const Path &path)
+inline bool isCycle(const Path &path)
 {
     if (path[0] != path[path.size() - 1])
         return false;

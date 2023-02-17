@@ -1,8 +1,11 @@
 #include "pch.h"
 
+#include <random>
+
 #include "../Solver/src/geomap.h"
 #include "../Solver/src/geometry.h"
-
+#include "../Solver/src/tsp/TspSolver.h"
+#include "../Solver/src/breitling/BreitlingSolver.h"
 
 TEST(TestLocationCase, TestConstructors)
 {
@@ -50,7 +53,7 @@ TEST(TestPath, TestCreation)
                     geometry::distance(s3.getLocation(), s4.getLocation()));
 }
 
-TEST(TestPath, TestHamiltonian)
+TEST(TestPath, TestCycle)
 {
     Station s1{ Location{0,0} };
     Station s2{ Location{10,0} };
@@ -61,10 +64,124 @@ TEST(TestPath, TestHamiltonian)
     p.getStations().push_back(&s2);
     p.getStations().push_back(&s3);
     p.getStations().push_back(&s4);
-    EXPECT_FALSE(geometry::isHamiltonian(p)); // not a cycle
+    EXPECT_FALSE(geometry::isCycle(p)); // not a cycle
     p.getStations().push_back(&s1);
-    EXPECT_TRUE(geometry::isHamiltonian(p)); // valid
+    EXPECT_TRUE(geometry::isCycle(p));  // valid
     p.getStations().push_back(&s2);
     p.getStations().push_back(&s1);
-    EXPECT_FALSE(geometry::isHamiltonian(p)); // passes twice by s2 and s1
+    EXPECT_FALSE(geometry::isCycle(p)); // passes twice by s2 and s1
+}
+
+static GeoMap genDummyMap()
+{
+    GeoMap map;
+    map.getStations().push_back(Station{ Location{0, 0} });
+    map.getStations().push_back(Station{ Location{10,0} });
+    map.getStations().push_back(Station{ Location{20,0} });
+    map.getStations().push_back(Station{ Location{30,0} });
+    return map;
+}
+
+static GeoMap genPredictableLargeMap(size_t stationCount, double seed=0)
+{
+    std::mt19937 engine{ seed };
+    std::uniform_int_distribution<double> random{ 0, 360 };
+    std::vector<double> positions;
+    std::generate(positions.begin(), positions.end(), [&random, &engine]() { return random(engine); });
+
+    GeoMap map;
+    for (size_t i = 0; i < stationCount; i++) {
+        map.getStations().push_back(Station{ Location{ positions[i*2], positions[i*2+1] } });
+    }
+    return map;
+}
+
+TEST(TestTSP, TestDummy)
+{
+    GeoMap map = genDummyMap();
+
+    TSPSolver solver;
+    Path path = solver.solveForPath(map);
+    ASSERT_EQ(map.getStations().size(), path.size());
+    ASSERT_TRUE(geometry::isCycle(path));
+
+    // on the dummy example the expected path is known
+    ASSERT_EQ(path[0], map.getStations()[0]);
+    ASSERT_EQ(path[1], map.getStations()[1]);
+    ASSERT_EQ(path[2], map.getStations()[2]);
+    ASSERT_EQ(path[3], map.getStations()[3]);
+}
+
+TEST(TestTSP, TestLarge)
+{
+    GeoMap map = genPredictableLargeMap(100); // 100 stations
+
+    TSPSolver solver;
+    Path path = solver.solveForPath(map);
+    ASSERT_EQ(map.getStations().size(), path.size());
+    ASSERT_TRUE(geometry::isCycle(path));
+
+    // local optimization: swapping two stations should be longer
+    nauticmiles_t shortestLength = path.length();
+    for (size_t i = 0; i < path.size(); i++) {
+        for (size_t j = 0; j < path.size(); j++) {
+            std::swap(path.getStations()[i], path.getStations()[j]);
+            ASSERT_GE(path.length(), shortestLength);
+            std::swap(path.getStations()[i], path.getStations()[j]);
+        }
+    }
+}
+
+TEST(TestBreitling, TestPredictable)
+{
+    GeoMap map = genPredictableLargeMap(200, 0);
+    BreitlingData dataset{};
+    dataset.nauticalDaytime   = 8;   // day starts at 8am
+    dataset.nauticalNighttime = 20;  // night falls at 8pm
+    dataset.departureTime     = 8;   // the course starts at 8am
+    dataset.planeFuelCapacity = 100; // arbitrary capacity, 100 is nice because it can be interpreted as a percentage
+    dataset.planeFuelUsage    = 10;  // 10% per hour
+    dataset.planeSpeed        = 100; // 100nm/h
+    dataset.departureStation  = &map.getStations()[0];
+    dataset.targetStation     = &map.getStations()[1];
+    
+    BreitlingSolver solver{ dataset };
+    Path path = solver.solveForPath(map);
+
+    EXPECT_TRUE(breitling_constraints::isPathValid(dataset, path)); // check all constraints at once
+
+    EXPECT_TRUE(breitling_constraints::satisfiesCardinalsConstraints(path));
+    EXPECT_TRUE(breitling_constraints::satisfiesFuelConstraints(dataset, path));
+    EXPECT_TRUE(breitling_constraints::satisfiesPathConstraints(dataset, path));
+    EXPECT_TRUE(breitling_constraints::satisfiesStationCountConstraints(path));
+    EXPECT_TRUE(breitling_constraints::satisfiesTimeConstraints(dataset, path));
+}
+
+TEST(TestBreitling, TestLarge)
+{
+    BreitlingData dataset{};
+    dataset.nauticalDaytime = 8;   // day starts at 8am
+    dataset.nauticalNighttime = 20;  // night falls at 8pm
+    dataset.departureTime = 8;   // the course starts at 8am
+    dataset.planeFuelCapacity = 100; // arbitrary capacity, 100 is nice because it can be interpreted as a percentage
+    dataset.planeFuelUsage = 10;  // 10% per hour
+    dataset.planeSpeed = 100; // 100nm/h
+
+    for (size_t i = 0; i < 20; i++) {
+        double seed = rand();
+        GeoMap map = genPredictableLargeMap(200, seed);
+        dataset.departureStation = &map.getStations()[0];
+        dataset.targetStation = &map.getStations()[1];
+
+        BreitlingSolver solver{ dataset };
+        Path path = solver.solveForPath(map);
+
+        EXPECT_TRUE(breitling_constraints::isPathValid(dataset, path)) << "with seed " << seed; // check all constraints at once
+
+        EXPECT_TRUE(breitling_constraints::satisfiesCardinalsConstraints(path));
+        EXPECT_TRUE(breitling_constraints::satisfiesFuelConstraints(dataset, path));
+        EXPECT_TRUE(breitling_constraints::satisfiesPathConstraints(dataset, path));
+        EXPECT_TRUE(breitling_constraints::satisfiesStationCountConstraints(path));
+        EXPECT_TRUE(breitling_constraints::satisfiesTimeConstraints(dataset, path));
+    }
 }
