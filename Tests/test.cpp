@@ -5,6 +5,7 @@
 #include "../Solver/src/geomap.h"
 #include "../Solver/src/geometry.h"
 #include "../Solver/src/tsp/TspSolver.h"
+#include "../Solver/src/tsp/genetictsp.h"
 #include "../Solver/src/breitling/BreitlingSolver.h"
 
 TEST(TestLocationCase, TestConstructors)
@@ -47,7 +48,7 @@ TEST(TestPath, TestCreation)
     p.getStations().push_back(&s3);
     p.getStations().push_back(&s4);
     ASSERT_EQ(p.size(), 4);
-    EXPECT_FLOAT_EQ(p.length(),
+    EXPECT_DOUBLE_EQ(p.length(),
                     geometry::distance(s1.getLocation(), s2.getLocation()) +
                     geometry::distance(s2.getLocation(), s3.getLocation()) +
                     geometry::distance(s3.getLocation(), s4.getLocation()));
@@ -82,11 +83,11 @@ static GeoMap genDummyMap()
     return map;
 }
 
-static GeoMap genPredictableLargeMap(size_t stationCount, double seed=0)
+static GeoMap genPredictableLargeMap(size_t stationCount, unsigned int seed=0)
 {
     std::mt19937 engine{ seed };
-    std::uniform_int_distribution<double> random{ 0, 360 };
-    std::vector<double> positions;
+    std::uniform_real_distribution<double> random{ 0., 360. };
+    std::vector<double> positions(stationCount*2);
     std::generate(positions.begin(), positions.end(), [&random, &engine]() { return random(engine); });
 
     GeoMap map;
@@ -100,8 +101,8 @@ TEST(TestTSP, TestDummy)
 {
     GeoMap map = genDummyMap();
 
-    TSPSolver solver;
-    Path path = solver.solveForPath(map);
+    std::unique_ptr<PathSolver> solver = std::make_unique<GeneticTSPSolver>();
+    Path path = solver->solveForPath(map);
     ASSERT_EQ(map.getStations().size(), path.size());
     ASSERT_TRUE(geometry::isCycle(path));
 
@@ -116,8 +117,8 @@ TEST(TestTSP, TestLarge)
 {
     GeoMap map = genPredictableLargeMap(100); // 100 stations
 
-    TSPSolver solver;
-    Path path = solver.solveForPath(map);
+    std::unique_ptr<PathSolver> solver = std::make_unique<GeneticTSPSolver>();
+    Path path = solver->solveForPath(map);
     ASSERT_EQ(map.getStations().size(), path.size());
     ASSERT_TRUE(geometry::isCycle(path));
 
@@ -160,15 +161,15 @@ TEST(TestBreitling, TestPredictable)
 TEST(TestBreitling, TestLarge)
 {
     BreitlingData dataset{};
-    dataset.nauticalDaytime = 8;   // day starts at 8am
+    dataset.nauticalDaytime   = 8;   // day starts at 8am
     dataset.nauticalNighttime = 20;  // night falls at 8pm
-    dataset.departureTime = 8;   // the course starts at 8am
+    dataset.departureTime     = 8;   // the course starts at 8am
     dataset.planeFuelCapacity = 100; // arbitrary capacity, 100 is nice because it can be interpreted as a percentage
-    dataset.planeFuelUsage = 10;  // 10% per hour
-    dataset.planeSpeed = 100; // 100nm/h
+    dataset.planeFuelUsage    = 10;  // 10% per hour
+    dataset.planeSpeed        = 100; // 100nm/h
 
     for (size_t i = 0; i < 20; i++) {
-        double seed = rand();
+        unsigned int seed = rand();
         GeoMap map = genPredictableLargeMap(200, seed);
         dataset.departureStation = &map.getStations()[0];
         dataset.targetStation = &map.getStations()[1];

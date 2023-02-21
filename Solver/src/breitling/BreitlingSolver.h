@@ -39,7 +39,7 @@ bool satisfiesTimeConstraints(const BreitlingData &dataset, const Path &path);
 
 // check all satisfiesXXConstraints, users may want to check time constraints separately because
 // slow planes simply cannot go through the set number of stations in due time
-bool isPathValid(const BreitlingData &dataset, const Path &path)
+inline bool isPathValid(const BreitlingData &dataset, const Path &path)
 {
     return satisfiesCardinalsConstraints(path) &&
         satisfiesStationCountConstraints(path) &&
