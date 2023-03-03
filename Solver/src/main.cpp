@@ -4,7 +4,9 @@
 
 #include "geomap.h"
 #include "geometry.h"
+#include "geoserializer/xlsserializer.h"
 
+/*
 void testDummy()
 {
     // TODO move all this in test classes, or scrap completely
@@ -24,30 +26,16 @@ void testDummy()
     std::cout << "distance from london to paris=" << geometry::distance(london, paris) << "nmi" << std::endl;
 
     std::cin.get();
-}
+}*/
 
 int main()
 {
-    using namespace OpenXLSX;
+    XLSSerializer serializer;
+    GeoMap map = serializer.parseMap("20aerodromes.xlsx");
 
-    XLDocument doc;
-    doc.create("Spreadsheet.xlsx");
-    auto wks = doc.workbook().worksheet("Sheet1");
+    for (const Station &s : map.getStations()) {
+        std::cout << s.getName() << " " << s.getOACI() << " " << s.getLocation().lon << " " << s.getLocation().lat << std::endl;
+    }
 
-    wks.cell("A1").value() = "Hello, OpenXLSX!";
-
-    doc.save();
-    doc.close();
-
-    XLDocument d2;
-    d2.open("Spreadsheet.xlsx");
-    for (const auto &name : d2.workbook().worksheetNames())
-        std::cout << name << std::endl;
-    std::string name = d2.workbook().worksheetNames()[0];
-    std::cout << "opening " << name << std::endl;
-    auto wk2 = d2.workbook().worksheet(name);
-    std::cout << wk2.cell("A1").value().get<std::string>() << std::endl;
-
-    std::cin.get();
     return 0;
 }
