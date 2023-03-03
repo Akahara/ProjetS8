@@ -8,7 +8,11 @@ D_ij distance de i à j
 A_ij   =1 ssi on prend le chemin de i à j
 
 min sum(A_ij*D_ij)
-forall_i sum_j(A_ij)=2
+forall_i(i!=s i!=t) sum_j(A_ij)=2
+sum_j(A_sj)=1
+sum_j(A_tj)=1
+
+# transformable en TSP en rajoutant une copie de la ville 0 et en posant s=t=0
 
 2.
 
