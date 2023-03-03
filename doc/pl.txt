@@ -26,7 +26,7 @@ min sum(A_ij*D_ij)
 
 N nb villes
 s ville départ
-t ville arrivée (s!=t)
+(t ville arrivée (s!=t))
 D_ij distance de i à j
 v vitesse de vol
 c capacité de l'avion
