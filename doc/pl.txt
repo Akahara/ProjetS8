@@ -1,4 +1,4 @@
-1a. 
+1.
 
 N nb villes
 s ville départ
@@ -8,29 +8,17 @@ D_ij distance de i à j
 A_ij   =1 ssi on prend le chemin de i à j
 
 min sum(A_ij*D_ij)
-
-
-
-1b. TSP
-
-N nb villes
-D_ij distance de i à j
-
-A_ij =1 ssi on prend le chemin de i à j
-
-min sum(A_ij*D_ij)
-
-
+forall_i sum_j(A_ij)=2
 
 2.
 
 N nb villes
+M nb villes à visiter au min
 s ville départ
-(t ville arrivée (s!=t))
 D_ij distance de i à j
 v vitesse de vol
-c capacité de l'avion
-t0 heure de départ
+c capacité -en temps- de l'avion
+# t0 heure de départ # retiré, plutôt appliquer un offset sur T1&T2 pour éviter le wrapping %24
 T1 heure de tombée de la nuit
 T2 heure de levé du jour
 N_i =1 ssi ville au nord
@@ -42,3 +30,14 @@ R_i =1 ssi rechargement possible de nuit
 A_ij =1 ssi on prend le chemin de i à j
 
 min sum(A_ij*D_ij/v)   ~   min sum(A_ij/D_ij)
+
+
+sum_ij(A_ij)>=2M-2        # visiter M villes
+sum_j(A_sj)=1             # partir de s
+sum_i(sum_j(A_ij)*N_j)>=1 # passer par une ville au nord
+sum_i(sum_j(A_ij)*S_j)>=1 # passer par une ville au sud
+sum_i(sum_j(A_ij)*E_j)>=1 # passer par une ville a l'est
+sum_i(sum_j(A_ij)*W_j)>=1 # passer par une ville a l'ouest
+sum(A_ij*D_ij/v) < 24     # moins de 24h
+?                         # respecter la capacité de l'avion
+?                         # refuel seulement de jour ou si R_i
