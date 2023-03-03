@@ -8,7 +8,7 @@ D_ij distance de i à j
 A_ij   =1 ssi on prend le chemin de i à j
 
 min sum(A_ij*D_ij)
-forall_i(i!=s i!=t) sum_j(A_ij)=2
+forall_i(i!=s i!=t) sum_j(A_ij)=2 # ne suffit pas à faire un seul circuit
 sum_j(A_sj)=1
 sum_j(A_tj)=1
 
@@ -36,6 +36,7 @@ A_ij =1 ssi on prend le chemin de i à j
 min sum(A_ij*D_ij/v)   ~   min sum(A_ij/D_ij)
 
 
+?                         # 1 chemin, partant de s
 sum_ij(A_ij)>=2M-2        # visiter M villes
 sum_j(A_sj)=1             # partir de s
 sum_i(sum_j(A_ij)*N_j)>=1 # passer par une ville au nord
