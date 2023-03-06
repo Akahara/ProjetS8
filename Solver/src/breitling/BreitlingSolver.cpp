@@ -2,11 +2,32 @@
 
 #include "../geometry.h"
 
+#include <assert.h>
+
 namespace breitling_constraints {
+
+bool isStationAtExtremum(const Station &station, cardinal_t card)
+{
+  switch (card) {
+  case Card::N: return station.getLocation().lat > 50;
+  case Card::S: return station.getLocation().lat < 45;
+  case Card::E: return station.getLocation().lon > 5;
+  case Card::W: return station.getLocation().lon < 0;
+  default: assert(false);
+  }
+}
 
 bool satisfiesCardinalsConstraints(const Path &path)
 {
-    return true; // TODO implement
+    cardinal_t notCrossedCardinalities = Card::N|Card::W|Card::E|Card::S;
+    for(size_t i = 0; i < path.size() && notCrossedCardinalities; i++) {
+        const Station *s = path.getStations()[i];
+        if (notCrossedCardinalities & Card::N) notCrossedCardinalities &= (!isStationAtExtremum(*s, Card::N)) << Card::N_offset;
+        if (notCrossedCardinalities & Card::E) notCrossedCardinalities &= (!isStationAtExtremum(*s, Card::E)) << Card::E_offset;
+        if (notCrossedCardinalities & Card::S) notCrossedCardinalities &= (!isStationAtExtremum(*s, Card::S)) << Card::S_offset;
+        if (notCrossedCardinalities & Card::W) notCrossedCardinalities &= (!isStationAtExtremum(*s, Card::W)) << Card::W_offset;
+    }
+    return notCrossedCardinalities == 0;
 }
 
 bool satisfiesStationCountConstraints(const Path &path)

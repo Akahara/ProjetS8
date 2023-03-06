@@ -26,6 +26,11 @@ constexpr daytime_t MAXIMUM_FLYGHT_DURATION = 24;
 // the plane must go through 100 stations minimum
 constexpr size_t MINIMUM_STATION_COUNT = 100;
 
+// cardinal must be one of N/E/S/W
+// if cardinal=N returns true iff the station is above the lat=X line
+// the breitling cup imposes that at least one station behind each lon/lat line is crossed
+bool isStationAtExtremum(const Station &station, cardinal_t cardinal);
+
 // the path must go through 4 stations, one for each cardinal direction
 bool satisfiesCardinalsConstraints(const Path &path);
 // the path must go through a set number of stations
